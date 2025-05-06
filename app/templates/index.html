@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DairyIQ – Milk Quality Predictor</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            margin: auto;
+        }
+
+        input,
+        button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>DairyIQ – Milk Quality Predictor</h1>
+    <form method="POST" action="/predict">
+        <input type="text" name="ph" placeholder="pH" required>
+        <input type="text" name="temperature" placeholder="Temperature (°C)" required>
+        <input type="text" name="fat" placeholder="Fat Content (%)" required>
+        <input type="text" name="conductivity" placeholder="Conductivity" required>
+        <input type="text" name="density" placeholder="Density" required>
+        <button type="submit">Predict Quality</button>
+    </form>
+
+    {% if prediction %}
+    <div class="result">
+        <strong>Predicted Milk Quality:</strong> {{ prediction }}
+    </div>
+    {% endif %}
+</body>
+
+</html>
