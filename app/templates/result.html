@@ -1,153 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DairyIQ Results</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-        }
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --danger-color: #e74c3c;
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --light-color: #ecf0f1;
+        --dark-color: #34495e;
+        --text-color: #333;
+        --background-color: #f5f5f5;
+        --card-background: #fff;
+        --border-radius: 8px;
+        --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
 
-        .navbar {
-            position: sticky;
-            top: 0;
-            width: 100%;
-            background: #2c3e50;
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        width: 100%;
+      }
+      /* body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        overflow-x: hidden;
+        /* Prevents horizontal scrolling 
+        width: 100%;
+      } */
 
-        .navbar a {
-            color: #fff;
-            text-decoration: none;
-            background: #e74c3c;
-            padding: 8px 16px;
-            border-radius: 4px;
-        }
+      /* .navbar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        background: var(--primary-color);
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+      } */
+      .navbar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        background-color: #2c3e50;
+        padding: 15px 30px 30px;
+        font-size: 18px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
 
+      .navbar a {
+        color: #fff;
+        text-decoration: none;
+        background: var(--danger-color);
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+
+      .navbar a:hover {
+        background-color: #c0392b;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 24px;
+        background: var(--card-background);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+      }
+
+      @media (max-width: 768px) {
         .container {
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 24px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+          margin: 20px;
+          padding: 16px;
         }
+      }
 
-        h2,
-        h3 {
-            text-align: center;
-            margin: 16px 0;
-        }
+      h2,
+      h3 {
+        text-align: center;
+        margin: 16px 0;
+        color: var(--dark-color);
+      }
 
-        #compositionChart {
-            width: 100% !important;
-            max-height: 400px;
-        }
+      .prediction {
+        text-align: center;
+        padding: 12px;
+        border-radius: var(--border-radius);
+        margin: 20px 0;
+        font-size: 1.2em;
+        background-color: var(--light-color);
+      }
 
-        table {
-            width: 100%;
-            margin-top: 30px;
-            border-collapse: collapse;
-        }
+      .prediction.good {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #27ae60;
+      }
 
-        table th,
-        table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
+      .prediction.bad {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #c0392b;
+      }
 
-        table th {
-            background-color: #ecf0f1;
-        }
+      .chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+        margin: 20px auto;
+      }
 
-        .btn {
-            display: inline-block;
-            margin: 30px auto 0;
-            padding: 10px 24px;
-            background: #3498db;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
+      @media (max-width: 600px) {
+        .chart-container {
+          height: 300px;
         }
+      }
+
+      table {
+        width: 100%;
+        margin-top: 30px;
+        border-collapse: collapse;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      table th,
+      table td {
+        padding: 12px 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+
+      table th {
+        background-color: var(--light-color);
+        font-weight: bold;
+      }
+
+      table tr:nth-child(even) {
+        background-color: rgba(236, 240, 241, 0.5);
+      }
+
+      table tr:hover {
+        background-color: rgba(236, 240, 241, 0.8);
+      }
+
+      .normal {
+        color: var(--success-color);
+        font-weight: bold;
+      }
+
+      .abnormal {
+        color: var(--danger-color);
+        font-weight: bold;
+      }
+
+      .btn {
+        display: inline-block;
+        margin: 30px auto 0;
+        padding: 10px 24px;
+        background: var(--secondary-color);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+        text-align: center;
+      }
+
+      .btn:hover {
+        background-color: #2980b9;
+      }
+
+      .btn-container {
+        text-align: center;
+      }
+
+      .info-text {
+        text-align: center;
+        margin-top: 10px;
+        font-style: italic;
+        color: #7f8c8d;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <div class="navbar">
-        <div style="color:#fff; font-weight:bold;">DairyIQ</div>
-        <a href="{{ url_for('logout') }}">Logout</a>
+      <div style="color: #fff; font-weight: bold">DairyIQ</div>
+      <a href="{{ url_for('logout') }}">Logout</a>
     </div>
 
     <div class="container">
-        <h2>Tested Composition</h2>
+      <h2>Tested Composition</h2>
 
-        <canvas id="compositionChart" data-labels='{{ feature_names | tojson }}'
-            data-values='{{ feature_values | tojson }}' data-colors='{{ colors | tojson }}'></canvas>
+      <div class="chart-container">
+        <canvas id="compositionChart"></canvas>
+      </div>
 
+      <div
+        class="prediction {% if prediction == 'Good' %}good{% else %}bad{% endif %}"
+      >
         <h3>Predicted Milk Quality: <strong>{{ prediction }}</strong></h3>
+      </div>
 
-        <!-- Raw Data Table -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Feature</th>
-                    <th>Value</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for i in range(feature_names|length) %}
-                <tr>
-                    <td>{{ feature_names[i] }}</td>
-                    <td>{{ '%.4g' % raw_values[i] }}</td>
-                    <td style="color: {{ colors[i] }};">
-                        {{ "Normal" if colors[i] == "#2ecc71" else "Abnormal" }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+      <!-- Raw Data Table -->
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Value</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(feature_names|length) %}
+          <tr>
+            <td>{{ feature_names[i] }}</td>
+            <td>{{ raw_values[i] }}</td>
+            <td
+              class="{% if colors[i] == '#2ecc71' %}normal{% else %}abnormal{% endif %}"
+            >
+              {% if colors[i] == '#2ecc71' %}Normal{% else %}Abnormal{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-        <div style="text-align:center;">
-            <a href="{{ url_for('index') }}" class="btn">Enter New Sample</a>
-        </div>
+      <p class="info-text">
+        Normal values are shown in green, abnormal values in red
+      </p>
+
+      <div class="btn-container">
+        <a href="{{ url_for('index') }}" class="btn">Enter New Sample</a>
+      </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('compositionChart');
-        const labels = JSON.parse(canvas.getAttribute('data-labels'));
-        const dataVals = JSON.parse(canvas.getAttribute('data-values'));
-        const bgColors = JSON.parse(canvas.getAttribute('data-colors'));
+      // Get data from Flask template using Jinja2 syntax
+      const labels = {{ feature_names | tojson }};
+      const rawValues = {{ raw_values | tojson }};
+      const bgColors = {{ colors | tojson }};
+      const prediction = "{{ prediction }}";
 
-        new Chart(canvas, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: dataVals,
-                    backgroundColor: bgColors
-                }]
+      // Create bar chart
+      const ctx = document.getElementById('compositionChart').getContext('2d');
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Feature Values',
+            data: rawValues,
+            backgroundColor: bgColors,
+            borderColor: '#fff',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Value'
+              }
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
+            x: {
+              title: {
+                display: true,
+                text: 'Milk Quality Parameters'
+              }
             }
-        });
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.raw}`;
+                }
+              }
+            }
+          }
+        }
+      });
     </script>
-
-</body>
-
+  </body>
 </html>

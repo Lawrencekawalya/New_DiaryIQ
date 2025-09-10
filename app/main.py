@@ -498,6 +498,55 @@ def index():
         return redirect(url_for('login_page'))
     return render_template('index.html')
 
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     if 'user' not in session:
+#         return redirect(url_for('login_page'))
+
+#     # 1) Collect input
+#     raw = {
+#         'pH':                 float(request.form['ph']),
+#         'Temperature':        float(request.form['temperature']),
+#         'Fat_Content':        float(request.form['fat']),
+#         'SNF':                float(request.form['snf']),
+#         'Titratable_Acidity': float(request.form['acidity']),
+#         'Protein_Content':    float(request.form['protein']),
+#         'Lactose_Content':    float(request.form['lactose']),
+#         'TPC':                float(request.form['tpc']),
+#         'SCC':                float(request.form['scc']),
+#     }
+
+#     # 2) Predict
+#     df = pd.DataFrame([list(raw.values())], columns=list(raw.keys()))
+#     pred_idx = model.predict(df)[0]
+#     prediction = labels[pred_idx]
+
+#     # 3) Normalize values for chart display
+#     raw_values = list(raw.values())
+#     min_val = min(raw_values)
+#     max_val = max(raw_values)
+#     normalized_values = [(v - min_val) / (max_val - min_val) if max_val != min_val else 1 for v in raw_values]
+
+#     # 4) Build color list
+#     colors = []
+#     for feat, val in raw.items():
+#         low, high = NORMAL_RANGES[feat]
+#         is_normal = True
+#         if low is not None and val < low:
+#             is_normal = False
+#         if high is not None and val > high:
+#             is_normal = False
+#         colors.append('#2ecc71' if is_normal else '#e67e22')
+
+#     # 5) Pass everything to result template
+#     return render_template('result.html',
+#         prediction=prediction,
+#         feature_names=list(raw.keys()),
+#         feature_values=normalized_values,
+#         raw_values=raw_values,
+#         colors=colors
+#     )
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'user' not in session:
@@ -521,13 +570,7 @@ def predict():
     pred_idx = model.predict(df)[0]
     prediction = labels[pred_idx]
 
-    # 3) Normalize values for chart display
-    raw_values = list(raw.values())
-    min_val = min(raw_values)
-    max_val = max(raw_values)
-    normalized_values = [(v - min_val) / (max_val - min_val) if max_val != min_val else 1 for v in raw_values]
-
-    # 4) Build color list
+    # 3) Build color list
     colors = []
     for feat, val in raw.items():
         low, high = NORMAL_RANGES[feat]
@@ -538,12 +581,19 @@ def predict():
             is_normal = False
         colors.append('#2ecc71' if is_normal else '#e67e22')
 
-    # 5) Pass everything to result template
-    return render_template('result.html',
+    # 4) Pass everything to result template - use actual values, not normalized
+    # return render_template('result.html',
+    #     prediction=prediction,
+    #     feature_names=list(raw.keys()),
+    #     feature_values=list(raw.values()),  # Use actual values
+    #     raw_values=list(raw.values()),      # Same as feature_values
+    #     colors=colors
+    # )
+        return render_template('result.html',
         prediction=prediction,
         feature_names=list(raw.keys()),
-        feature_values=normalized_values,
-        raw_values=raw_values,
+        feature_values=list(raw.values()),  # Actual values for bar chart
+        raw_values=list(raw.values()),      # Same as feature_values
         colors=colors
     )
 
