@@ -20,37 +20,54 @@
         --border-radius: 8px;
         --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
-
-      body {
+      /* Reset and base styles */
+      * {
+        box-sizing: border-box;
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: var(--background-color);
-        color: var(--text-color);
-        line-height: 1.6;
-        width: 100%;
+        padding: 0;
       }
+
       /* body {
         font-family: Arial, sans-serif;
         background-color: #f5f5f5;
         color: #333;
         overflow-x: hidden;
-        /* Prevents horizontal scrolling 
-        width: 100%;
+                width: 100%;
+        -ms-overflow-style: none;
+        scrollbar-width: none; 
       } */
 
-      /* .navbar {
-        position: sticky;
-        top: 0;
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
         width: 100%;
-        background: var(--primary-color);
-        padding: 12px 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        z-index: 10;
+        overflow-y: scroll; /* keeps scrolling enabled */
+        -ms-overflow-style: none; /* IE and old Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+
+      /* Chrome, Safari, newer Edge */
+      body::-webkit-scrollbar {
+        display: none;
+      }
+      /* For Chrome, Edge, Safari */
+      /* body::-webkit-scrollbar {
+        display: none;
       } */
-      .navbar {
+
+      /* For Firefox */
+      /* body {
+        scrollbar-width: none; hides scrollbar
+      } */
+
+      /* For IE & old Edge */
+      /* body {
+        -ms-overflow-style: none;
+      } */
+
+      /* Navigation */
+      nav {
         position: sticky;
         top: 0;
         width: 100%;
@@ -65,17 +82,33 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
 
-      .navbar a {
-        color: #fff;
-        text-decoration: none;
-        background: var(--danger-color);
-        padding: 8px 16px;
-        border-radius: 4px;
-        transition: background-color 0.3s;
+      .nav-brand {
+        font-size: 22px;
+        font-weight: bold;
+        white-space: nowrap;
       }
 
-      .navbar a:hover {
-        background-color: #c0392b;
+      .nav-actions {
+        display: flex;
+        align-items: center;
+      }
+
+      .logout-form {
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .logout-btn {
+        padding: 8px 20px;
+        background-color: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        white-space: nowrap;
       }
 
       .container {
@@ -87,18 +120,85 @@
         box-shadow: var(--box-shadow);
       }
 
-      @media (max-width: 768px) {
-        .container {
-          margin: 20px;
-          padding: 16px;
-        }
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 15px;
+        padding: 0 15px;
+        word-wrap: break-word;
       }
 
-      h2,
-      h3 {
+      /* Form styling */
+      .predictor-form {
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 550px;
+        margin: 0 auto;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: grid;
+        gap: 2px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+        width: 100%;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      footer {
         text-align: center;
-        margin: 16px 0;
-        color: var(--dark-color);
+        margin-top: 0px;
+        padding: 20px;
+        color: #7f8c8d;
+        width: 100%;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        nav {
+          padding: 15px;
+        }
+
+        .container {
+          padding: 30px 15px;
+        }
+
+        .predictor-form {
+          padding: 20px;
+        }
       }
 
       .prediction {
@@ -200,11 +300,15 @@
   </head>
 
   <body>
-    <div class="navbar">
-      <div style="color: #fff; font-weight: bold">DairyIQ</div>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+    <!-- Navbar -->
+    <nav>
+      <div class="nav-brand">DairyIQ</div>
+      <form action="/logout" method="get">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </nav>
 
+    <!-- Body -->
     <div class="container">
       <h2>Tested Composition</h2>
 
@@ -259,18 +363,20 @@
       const prediction = "{{ prediction }}";
 
       // Create bar chart
-      const ctx = document.getElementById('compositionChart').getContext('2d');
+      const ctx = document.getElementById("compositionChart").getContext("2d");
       new Chart(ctx, {
         type: "bar",
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Feature Values',
-            data: rawValues,
-            backgroundColor: bgColors,
-            borderColor: '#fff',
-            borderWidth: 1
-          }]
+          datasets: [
+            {
+              label: "Feature Values",
+              data: rawValues,
+              backgroundColor: bgColors,
+              borderColor: "#fff",
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -280,29 +386,29 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Value'
-              }
+                text: "Value",
+              },
             },
             x: {
               title: {
                 display: true,
-                text: 'Milk Quality Parameters'
-              }
-            }
+                text: "Milk Quality Parameters",
+              },
+            },
           },
           plugins: {
             legend: {
-              display: false
+              display: false,
             },
             tooltip: {
               callbacks: {
-                label: function(context) {
+                label: function (context) {
                   return `${context.label}: ${context.raw}`;
-                }
-              }
-            }
-          }
-        }
+                },
+              },
+            },
+          },
+        },
       });
     </script>
   </body>
