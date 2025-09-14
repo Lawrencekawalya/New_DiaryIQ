@@ -270,7 +270,7 @@
       }
       .nav-btn {
         padding: 8px 20px;
-        background-color: #3498db; /* blue for normal buttons */
+        /* background-color: #3498db; blue for normal buttons */
         border: none;
         color: white;
         border-radius: 5px;
@@ -283,7 +283,8 @@
         background-color: #e74c3c; /* red for logout */
       }
       .nav-btn:hover {
-        opacity: 0.9;
+        /* opacity: 0.9; */
+        color: #3498db;
       }
       .nav-link {
         text-decoration: none;
@@ -413,7 +414,7 @@
       // });
       $(document).ready(function () {
         $("#historyTable").DataTable({
-          pageLength: 20, // show 20 rows per page
+          pageLength: 10, // show 20 rows per page
           ordering: true, // enable sorting
           searching: true, // enable search box
           lengthChange: true, // allow changing rows per page
