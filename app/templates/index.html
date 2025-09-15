@@ -291,6 +291,7 @@
         text-decoration: none;
         color: inherit; /* prevent browser from applying purple/blue */
       }
+      /* ############################################### */
       /* Loading overlay */
       #loadingOverlay {
         display: none; /* hidden by default */
@@ -334,6 +335,53 @@
         font-weight: bold;
         color: #2c3e50;
       }
+      /* ####################################################################### */
+      /* Gear loader */
+      .gears {
+        display: flex;
+        gap: 15px;
+      }
+
+      .gear {
+        width: 50px;
+        height: 50px;
+        border: 8px solid #3498db;
+        border-radius: 50%;
+        position: relative;
+        animation: spin 2s linear infinite;
+      }
+
+      .gear::before,
+      .gear::after {
+        content: "";
+        position: absolute;
+        width: 8px;
+        height: 20px;
+        background: #3498db;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .gear::after {
+        top: auto;
+        bottom: -10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .loader-logo {
+        width: 100px; /* adjust as needed */
+        height: auto; /* keeps aspect ratio */
+      }
+      /* ####################################################################### */
+
       .dashboard {
         max-width: 1400px;
         margin: auto;
@@ -617,9 +665,23 @@
       {% endif %}
     </div>
     <!-- Loading overlay -->
-    <div id="loadingOverlay">
+    <!-- <div id="loadingOverlay">
       <div class="spinner"></div>
       <p>Processing prediction...</p>
+    </div> -->
+    <!-- Loading overlay -->
+    <div id="loadingOverlay">
+      <div class="gears">
+        <div class="gear"></div>
+        <!-- <div class="gear"></div> -->
+        <img
+          src="{{ url_for('static', filename='favicon.png') }}"
+          alt="DairyIQ Logo"
+          class="loader-logo"
+        />
+        <div class="gear"></div>
+      </div>
+      <p>Machine Learning in Progress...</p>
     </div>
 
     <footer>&copy; 2023 DairyIQ. All rights reserved.</footer>
