@@ -1,15 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import firebase_admin
+from firebase_admin import auth
 from firebase_admin import credentials
 import joblib
 import pandas as pd
 from datetime import datetime, timedelta
 import os
+import requests
 import uuid
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import redirect, url_for
 import secrets
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 app = Flask(__name__)
@@ -19,8 +24,8 @@ app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
-# cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
-cred = credentials.Certificate("firebase_key.json")
+cred = credentials.Certificate("firebase/diaryiq-firebase-adminsdk-fbsvc-4465f48c80.json")
+# cred = credentials.Certificate("firebase_key.json")
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -42,35 +47,127 @@ NORMAL_RANGES = {
     'SCC':                  (None, 400000),
 }
 
+# @app.route('/')
+# def login_page():
+#     return render_template('login.html')
+
+# @app.route('/login', methods=['POST'])
+# def login():
+#     email = request.form['username']
+#     password = request.form['password']
+#     if email and password:
+#         session.permanent = True
+#         session['user'] = email
+#         return redirect(url_for('index'))
+#     return render_template('login.html', error="Invalid credentials")
+
+# @app.route('/')
+# def login_page():
+#     return render_template('login.html')
+
+FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
+
+if not FIREBASE_API_KEY:
+    print("API KEY is missing, please set FIREBASE_API_KEY")
+else:
+    print("API KEY loaded successfully")
+
+
+def firebase_login(email, password):
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+    payload = {
+        "email": email,
+        "password": password,
+        "returnSecureToken": True
+    }
+    response = requests.post(url, json=payload)
+    return response.json()
+
+# Show login form
 @app.route('/')
 def login_page():
     return render_template('login.html')
 
+# Handle login form submission
 @app.route('/login', methods=['POST'])
 def login():
     email = request.form['username']
     password = request.form['password']
-    if email and password:
-        session.permanent = True
-        session['user'] = email
-        return redirect(url_for('index'))
-    return render_template('login.html', error="Invalid credentials")
 
+    result = firebase_login(email, password)
+
+    if "idToken" in result:
+        session.permanent = True
+        session['user'] = result['email']
+        return redirect(url_for('index'))
+    else:
+        error_message = result.get("error", {}).get("message", "Invalid credentials")
+        return render_template('login.html', error=error_message)
+    
+# Logout
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('login_page'))
 
+
+# @app.route('/login', methods=['POST'])
+# def login():
+#     email = request.form['username']
+#     password = request.form['password']
+
+#     result = firebase_login(email, password)
+
+#     if "idToken" in result:
+#         session.permanent = True
+#         session['user'] = result['email']
+#         return redirect(url_for('index'))
+#     else:
+#         return render_template('login.html', error="Invalid credentials")
+
+
+# FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
+
+# def firebase_login(email, password):
+#     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+#     payload = {
+#         "email": email,
+#         "password": password,
+#         "returnSecureToken": True
+#     }
+#     response = requests.post(url, json=payload)
+#     return response.json()
+
+# @app.route('/login', methods=['POST'])
+# def login():
+#     email = request.form['username']
+#     password = request.form['password']
+
+#     result = firebase_login(email, password)
+
+#     if "idToken" in result:
+#         session.permanent = True
+#         session['user'] = result['email']
+#         return redirect(url_for('index'))
+#     else:
+#         return render_template('login.html', error="Invalid credentials")
+
+
+# @app.route('/logout')
+# def logout():
+#     session.pop('user', None)
+#     return redirect(url_for('login'))
+
 @app.route('/index')
 def index():
     if 'user' not in session:
-        return redirect(url_for('login_page'))
+        return redirect(url_for('login'))
     return render_template('index.html')
 
 @app.route('/history')
 def history():
     if 'user' not in session:
-        return redirect(url_for('login_page'))
+        return redirect(url_for('login'))
 
     # Fetch all batches ordered by created_at
     batches = db.collection("milk_batches").order_by("created_at").stream()
@@ -87,13 +184,31 @@ def history():
         })
 
     return render_template("history.html", history_data=history_data)
+
+@app.route('/debug/firebase')
+def debug_firebase():
+    # Project ID from Firebase Admin SDK
+    project_id = None
+    try:
+        app_options = firebase_admin.get_app().project_id
+        project_id = app_options
+    except Exception as e:
+        project_id = f"Error reading project_id: {e}"
+
+    # API Key from environment
+    api_key = os.environ.get("FIREBASE_API_KEY", "⚠️ Not Set")
+
+    return {
+        "firebase_admin_project_id": project_id,
+        "firebase_api_key": api_key
+    }
 ############################################################################
 QUALITY_MAP = {"Low": 0, "Moderate": 1, "High": 2}
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'user' not in session:
-        return redirect(url_for('login_page'))
+        return redirect(url_for('login'))
 
     # 1) Collect batch info
     batch_info = {
@@ -169,7 +284,7 @@ def predict():
 @app.route('/result/<batch_id>')
 def show_result(batch_id):
     if 'user' not in session:
-        return redirect(url_for('login_page'))
+        return redirect(url_for('login'))
 
     # Get this batch
     doc = db.collection("milk_batches").document(batch_id).get()
