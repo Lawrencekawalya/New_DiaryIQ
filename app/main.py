@@ -9,10 +9,13 @@ import uuid
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import redirect, url_for
+import secrets
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'change_this_to_something_secret')
+# generate a 16-byte random token (hex encoded)
+# print(secrets.token_hex(16))
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', '3e59e99addb9052eb7da6ab9935e49c3')
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Initialize Firebase
